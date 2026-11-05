@@ -106,12 +106,21 @@
             var zip = readZip(buf);
             return zip.bytes("manifest.json").then(function (b) {
                 item.manifest = JSON.parse(new TextDecoder().decode(b));
-                var icon = item.manifest.icon;
-                if (typeof icon === "string" && zip.has(icon)) {
-                    return zip.bytes(icon).then(function (ib) {
-                        item.iconUrl = URL.createObjectURL(new Blob([ib], { type: mimeFor(icon) }));
-                    }).catch(function () {});
+                // Images come out of the archive as blob: URLs. A missing or broken one is
+                // skipped, so it never hides the rest of the card.
+                function image(path) {
+                    if (typeof path !== "string" || !zip.has(path)) return Promise.resolve(null);
+                    return zip.bytes(path).then(function (ib) {
+                        return URL.createObjectURL(new Blob([ib], { type: mimeFor(path) }));
+                    }).catch(function () { return null; });
                 }
+                // "preview" is marketplace-only: one image path, or a list of them.
+                var pv = item.manifest.preview;
+                var previews = (Array.isArray(pv) ? pv : [pv]).slice(0, 6);
+                return Promise.all([image(item.manifest.icon)].concat(previews.map(image))).then(function (urls) {
+                    item.iconUrl = urls[0];
+                    item.previews = urls.slice(1).filter(Boolean);
+                });
             });
         }).catch(function (err) {
             item.error = String(err && err.message || err);
@@ -131,6 +140,41 @@
         ul.appendChild(li);
     }
 
+    // Preview: the first image large; with several, numbered buttons switch between them.
+    // Clicking the image opens it full size.
+    function previewBox(urls, title) {
+        var box = el("div", "theme-preview");
+        var link = el("a");
+        link.href = urls[0];
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.title = "Open full size";
+        var img = el("img");
+        img.src = urls[0];
+        img.alt = "Preview of " + title;
+        img.loading = "lazy";
+        link.appendChild(img);
+        box.appendChild(link);
+        if (urls.length > 1) {
+            var pick = el("div", "preview-pick");
+            urls.forEach(function (u, i) {
+                var b = el("button", null, String(i + 1));
+                b.type = "button";
+                b.setAttribute("aria-label", "Preview " + (i + 1));
+                if (i === 0) b.className = "on";
+                b.addEventListener("click", function () {
+                    img.src = u;
+                    link.href = u;
+                    var all = pick.querySelectorAll("button");
+                    for (var j = 0; j < all.length; j++) all[j].className = all[j] === b ? "on" : "";
+                });
+                pick.appendChild(b);
+            });
+            box.appendChild(pick);
+        }
+        return box;
+    }
+
     function render(item) {
         var mf = item.manifest || {};
         var title = mf.name || item.file.replace(/\.theame$/i, "");
@@ -141,6 +185,8 @@
         bar.appendChild(el("div", "title-bar-text", item.file));
         win.appendChild(bar);
         var body = el("div", "window-body");
+
+        if (item.previews && item.previews.length) body.appendChild(previewBox(item.previews, title));
 
         var head = el("div", "theme-head");
         if (item.iconUrl) {
@@ -159,6 +205,9 @@
         if (by.length) info.appendChild(el("p", "theme-by", by.join(" · ")));
         head.appendChild(info);
         body.appendChild(head);
+
+        var desc = typeof mf.description === "string" ? mf.description.trim() : "";
+        if (desc) body.appendChild(el("p", "theme-desc", desc));
 
         var parts = el("ul", "theme-parts");
         var mods = names(mf.mods), bgs = names(mf.backgrounds), chats = names(mf.chats);
@@ -184,7 +233,7 @@
         win.appendChild(body);
         li.appendChild(win);
 
-        item.search = [title, item.file, mf.author || ""].concat(mods, bgs, chats, vars).join(" ").toLowerCase();
+        item.search = [title, item.file, mf.author || "", desc].concat(mods, bgs, chats, vars).join(" ").toLowerCase();
         item.li = li;
         return li;
     }

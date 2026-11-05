@@ -77,6 +77,8 @@
   "name": "Night Shift",
   "version": "1.2.0",
   "author": "you",
+  "description": "Dark blue panels and neon chat bubbles in an accent colour you pick.",
+  "preview": "preview.png",
   "icon": "icon.png",
   "variables": [
     { "name": "accent", "label": "Accent", "type": "color", "default": "#33ff88" }
@@ -98,6 +100,8 @@
                     <tr><td><code>name</code></td><td>string</td><td>yes</td><td>Display name in the panel and the marketplace.</td></tr>
                     <tr><td><code>version</code></td><td>string</td><td>no</td><td>Your version, e.g. <code>"1.2.0"</code>. Shown, not compared.</td></tr>
                     <tr><td><code>author</code></td><td>string</td><td>no</td><td>Shown in the marketplace.</td></tr>
+                    <tr><td><code>description</code></td><td>string</td><td>no</td><td>Marketplace only. A short summary of the theme. See <a href="#listing">Marketplace listing</a>.</td></tr>
+                    <tr><td><code>preview</code></td><td>string or array</td><td>no</td><td>Marketplace only. Path to a preview image, or a list of paths. See <a href="#listing">Marketplace listing</a>.</td></tr>
                     <tr><td><code>mods</code></td><td>array</td><td>no</td><td>JavaScript parts. See <a href="#mods">Mods</a>.</td></tr>
                     <tr><td><code>backgrounds</code></td><td>array</td><td>no</td><td>Background parts. See <a href="#backgrounds">Backgrounds</a>.</td></tr>
                     <tr><td><code>chats</code></td><td>array</td><td>no</td><td>Chat-area CSS parts. See <a href="#chats">Chat styles</a>.</td></tr>
@@ -220,6 +224,31 @@
                 Blocks for different variables can be nested. An unknown name in a block counts as off. An unknown plain placeholder is
                 left as written. Variables belong to their own theme, so two themes can both have an <code>accent</code> without clashing.</p>
 
+                <h2 id="listing">Marketplace listing</h2>
+                <p>Two manifest fields exist only for the <a href="/marketplace">marketplace</a>. The Theames app doesn't use them,
+                so adding them doesn't change how your theme works and doesn't need a newer version of Theames. The marketplace reads
+                them straight out of the <code>.theame</code> archive, so updating the file updates the listing.</p>
+<pre><code>"description": "Drifting aurora colours behind Teams, with frosted-glass chat bubbles.",
+"preview": ["previews/chat.png", "previews/channels.png"]</code></pre>
+                <div class="table-scroll">
+                <table>
+                    <tr><th>Field</th><th>Meaning</th></tr>
+                    <tr><td><code>description</code></td><td>One to three sentences saying what the theme does and what users can adjust.
+                    Plain text, around 300 characters at most. It is also searchable on the marketplace.</td></tr>
+                    <tr><td><code>preview</code></td><td>An image in the archive (<code>.png</code>, <code>.jpg</code>, <code>.webp</code> or
+                    <code>.gif</code>), or a list of up to six. The first is shown on the theme's card, and people can switch between the
+                    others. Clicking a preview opens it full size.</td></tr>
+                </table>
+                </div>
+                <ul>
+                    <li><strong>Use a 16:10 screenshot</strong>, e.g. 1280 × 800. Cards crop other shapes from the top-left corner.</li>
+                    <li><strong>Keep each image small</strong>, ideally under 300&nbsp;KB (a compressed JPEG or WebP). People download the whole
+                    <code>.theame</code>, previews included.</li>
+                    <li><strong>Show only your theme</strong>, with no other mods on, so people see what they will get.</li>
+                    <li><strong>Check your screenshot for private information</strong>: names, messages, meeting titles and profile pictures.
+                    Use a test account or a demo team if you can.</li>
+                </ul>
+
                 <h2 id="packing">Packing &amp; testing</h2>
                 <p>Zip the <strong>contents</strong> of your theme folder, not the folder itself, then give it a <code>.theame</code> name.</p>
                 <h3>macOS / Linux</h3>
@@ -250,8 +279,8 @@ with zipfile.ZipFile("MyTheme.theame", "w", zipfile.ZIP_DEFLATED) as z:
 
                 <h2>Submitting</h2>
                 <p>Email your <code>.theame</code> to <a href="mailto:me@poplel.xyz?subject=Theame%20for%20the%20marketplace">me@poplel.xyz</a>
-                to have it added to the <a href="/marketplace">marketplace</a>. Include a sentence about what it does and, if you like,
-                a screenshot. Please keep mod JavaScript readable rather than minified, so people can check what it does.</p>
+                to have it added to the <a href="/marketplace">marketplace</a>. Give it a <code>description</code> and a
+                <code>preview</code> image first (see <a href="#listing">Marketplace listing</a>), so its card shows what it does. Please keep mod JavaScript readable rather than minified, so people can check what it does.</p>
             </main>
         </div>
 
