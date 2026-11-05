@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theames</title>
+    <meta name="description" content="Theames — themes and mods for the Microsoft Teams desktop app, for Windows and macOS">
+    <link rel="icon" href="/logo.png">
+    <link rel="stylesheet" href="https://unpkg.com/98.css@0.1.21/dist/98.css">
+    <link rel="stylesheet" href="/style.css">
+    <script src="/sidebar.js" defer></script>
+</head>
+<body>
+    <div class="window app-window">
+        <div class="title-bar">
+            <div class="title-bar-text">Theames</div>
+            <div class="title-bar-controls">
+                <button aria-label="Minimize" onclick="document.exitFullscreen()"></button>
+                <button aria-label="Maximize" onclick="document.documentElement.requestFullscreen()"></button>
+                <a href="https://poplel.xyz"><button aria-label="Close"></button></a>
+            </div>
+        </div>
+
+        <div class="app-body">
+            <nav class="sidebar">
+                <noscript>
+                    <div class="window nav">
+                        <div class="window-body">
+                            <p class="nav-heading">Theames</p>
+                            <ul>
+                                <li><a href="/">Home &amp; Download</a></li>
+                                <li><a href="/marketplace">Marketplace</a></li>
+                                <li><a href="/docs">.theame format</a></li>
+                                <li><a href="mailto:me@poplel.xyz">Submit a theame: me@poplel.xyz</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </noscript>
+            </nav>
+            <main class="content sunken-panel">
+                <h1>Theames</h1>
+                <p class="meta">Themes and mods for the Microsoft Teams desktop app, on Windows and macOS.</p>
+
+                <div class="callout">
+                    <p><strong>TLDR; Theames is a modloader for Teams. You use <code>.theame</code> files to add new mods and theames.</strong>
+                    You choose what's on from a <strong>Theames</strong> item inside Teams' own "..." menu.<br>
+                    <strong>Get themes from the <a href="/marketplace">marketplace</a>.</strong></p>
+                </div>
+
+                <h2 id="download">Download</h2>
+                <div class="downloads">
+                    <div class="dl">
+                        <h3>Windows</h3>
+                        <p>Windows 10 / 11, 64-bit (x64). Version 1.0.0, zip, 1.7&nbsp;MB.</p>
+                        <a class="dl-button" href="/downloads/Theames-1.0.0-Windows-x64.zip" download>Download for Windows</a>
+                        <p class="hash" title="SHA-256">SHA-256 d7bfbffec89f3a9bf8a56df4988edbbdd4f6c76dcb44287c1c28b7dc16411f2a</p>
+                    </div>
+                    <div class="dl">
+                        <h3>macOS</h3>
+                        <p>macOS 11 or newer, Apple silicon and Intel. Version 1.0.0, dmg, 6.0&nbsp;MB.</p>
+                        <a class="dl-button" href="/downloads/Theames-1.0.0-macOS.dmg" download>Download for Mac</a>
+                        <p class="hash" title="SHA-256">SHA-256 176258a130e6f4c5371195583a9091e22db0df3c86829fba2ca505ecfc4ae4a1</p>
+                    </div>
+                </div>
+                <p class="muted" style="font-size:11px">Needs the new Microsoft Teams app (the one built on WebView2). Checksums: <a href="/downloads/SHA256SUMS.txt">SHA256SUMS.txt</a>. Source and releases on <a href="https://github.com/Poplel/theames">GitHub</a>.</p>
+
+                <h2>Installing</h2>
+                <h3>Windows</h3>
+                <ol class="steps">
+                    <li>Unzip the download and run <code>Theames.exe</code>.</li>
+                    <li>Windows SmartScreen may warn you. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</li>
+                    <li>On first run Theames adds a <strong>Theames</strong> shortcut to the Start menu and desktop and pins it to the taskbar. Open Teams from that shortcut from now on.</li>
+                </ol>
+                <h3>macOS</h3>
+                <ol class="steps">
+                    <li>Open the <code>.dmg</code> and drag <strong>Theames</strong> into Applications.</li>
+                    <li>Open Theames. On first launch it asks for the <strong>App Management</strong> permission (System Settings → Privacy &amp; Security). That permission only lets Theames change the Teams icon, and you can skip it.</li>
+                    <li>That's it. Theames runs in the background and starts with your Mac, so from now on you just open Teams as usual.</li>
+                </ol>
+
+                <h2>Using themes</h2>
+                <ol class="steps">
+                    <li>Download a <code>.theame</code> file from the <a href="/marketplace">marketplace</a>.</li>
+                    <li>In Teams, open the <strong>...</strong> (Settings and more) menu and choose <strong>🎨 Theames</strong>. Click <strong>Open themes folder</strong> and drop the file in.</li>
+                    <li>Select the parts you want. You can mix them across themes, for example a background from one theme with the chat style and mods of another. Changes apply straight away, with no restart.</li>
+                </ol>
+
+                <h2>What a theame can change</h2>
+                <ul>
+                    <li><strong>Backgrounds</strong>: an image, colour or gradient behind the whole Teams window</li>
+                    <li><strong>Chat styles</strong>: CSS for the chat and message area</li>
+                    <li><strong>Mods</strong>: JavaScript that changes how Teams looks and works. Several can be on at once</li>
+                    <li><strong>Icon</strong>: the app icon. On macOS this is the Teams icon itself; on Windows it is the Theames shortcut</li>
+                    <li><strong>Settings</strong>: colours, sliders and switches a theme exposes, which you adjust in the Theames panel</li>
+                </ul>
+                <p>Want to make your own? The <a href="/docs">.theame format docs</a> cover everything a theme can contain.
+                Send finished ones to <a href="mailto:me@poplel.xyz?subject=Theame%20for%20the%20marketplace">me@poplel.xyz</a> to get them listed.</p>
+
+                <h2>How it works</h2>
+                <p>The new Teams draws its window in a Microsoft Edge WebView2. Theames starts Teams with WebView2's local debugging port
+                switched on, connects to it over the Chrome DevTools Protocol on <code>127.0.0.1</code>, and adds your selected theme parts
+                to every Teams page. Theames has no window of its own. On macOS it stays running in the background and reconnects
+                whenever Teams opens. On Windows it runs while Teams is open and quits when Teams does.</p>
+                <p>To remove it, use <strong>Uninstall Theames</strong> in the panel. That puts Teams back the way it was and keeps your downloaded themes.</p>
+            </main>
+        </div>
+
+        <div class="status-bar">
+            <p class="status-bar-field">theames.poplel.xyz</p>
+            <p class="status-bar-field">Windows &amp; macOS</p>
+            <p class="status-bar-field">v1.0.0</p>
+        </div>
+    </div>
+</body>
+</html>

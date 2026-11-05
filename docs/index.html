@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.theame format — Theames</title>
+    <meta name="description" content="How .theame files are built: the archive, manifest.json, mods, backgrounds, chat styles, icons and variables">
+    <link rel="icon" href="/logo.png">
+    <link rel="stylesheet" href="https://unpkg.com/98.css@0.1.21/dist/98.css">
+    <link rel="stylesheet" href="/style.css">
+    <script src="/sidebar.js" defer></script>
+</head>
+<body>
+    <div class="window app-window">
+        <div class="title-bar">
+            <div class="title-bar-text">Theames — .theame format</div>
+            <div class="title-bar-controls">
+                <button aria-label="Minimize" onclick="document.exitFullscreen()"></button>
+                <button aria-label="Maximize" onclick="document.documentElement.requestFullscreen()"></button>
+                <a href="/"><button aria-label="Close"></button></a>
+            </div>
+        </div>
+
+        <div class="app-body">
+            <nav class="sidebar">
+                <noscript>
+                    <div class="window nav">
+                        <div class="window-body">
+                            <p class="nav-heading">Theames</p>
+                            <ul>
+                                <li><a href="/">Home &amp; Download</a></li>
+                                <li><a href="/marketplace">Marketplace</a></li>
+                                <li><a href="/docs">.theame format</a></li>
+                                <li><a href="mailto:me@poplel.xyz">Submit a theame: me@poplel.xyz</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </noscript>
+            </nav>
+            <main class="content sunken-panel">
+                <h1>The .theame format</h1>
+                <p class="meta">Everything a theme file can contain, and how Theames uses it. Written for Theames 1.0.0.</p>
+
+                <div class="callout">
+                    <p><strong>TLDR; a <code>.theame</code> is a zip file with a <code>manifest.json</code> at its root.</strong>
+                    The manifest lists any mix of four kinds of parts: <strong>mods</strong> (JavaScript), <strong>backgrounds</strong>
+                    (an image or a CSS colour), <strong>chat styles</strong> (CSS) and an <strong>icon</strong>. It can also declare
+                    <strong>variables</strong> that users adjust in the Theames panel. People can mix parts from different themes,
+                    so each part should work on its own.</p>
+                </div>
+
+                <h2 id="archive">The archive</h2>
+                <p>A theme is an ordinary zip archive renamed to <code>.theame</code>. <code>manifest.json</code> must sit at the
+                <strong>root</strong> of the archive, not inside a folder. Every other path in the manifest is relative to that root.
+                Any folder layout works. The built-in themes use this one:</p>
+<pre><code>MyTheme.theame
+├── manifest.json
+├── icon.png
+├── bg/night.png
+├── chats/bubbles.css
+└── mods/tweaks.js</code></pre>
+                <p>Users install a theme by putting the file in their themes folder. The panel's <strong>Open themes folder</strong> button opens it.</p>
+                <div class="table-scroll">
+                <table>
+                    <tr><th>System</th><th>Themes folder</th></tr>
+                    <tr><td>macOS</td><td><code>~/Library/Application Support/Theames/themes</code></td></tr>
+                    <tr><td>Windows</td><td><code>%APPDATA%\Theames\themes</code></td></tr>
+                    <tr><td>Either</td><td><code>$THEAMES_HOME/themes</code> when the <code>THEAMES_HOME</code> environment variable is set</td></tr>
+                </table>
+                </div>
+                <p>The <strong>file name</strong> identifies the theme. Theames saves the user's choices as
+                <code>File.theame::Part name</code> and keeps variable values per file name. If you rename the file, users lose their
+                selection and settings for it. Keep the name the same across versions and put the version in the manifest.</p>
+
+                <h2 id="manifest">manifest.json</h2>
+<pre><code>{
+  "name": "Night Shift",
+  "version": "1.2.0",
+  "author": "you",
+  "icon": "icon.png",
+  "variables": [
+    { "name": "accent", "label": "Accent", "type": "color", "default": "#33ff88" }
+  ],
+  "backgrounds": [
+    { "name": "Night city", "file": "bg/night.png" },
+    { "name": "Plain",      "color": "linear-gradient(#101820, #000)" }
+  ],
+  "chats": [
+    { "name": "Neon bubbles", "file": "chats/bubbles.css" }
+  ],
+  "mods": [
+    { "name": "Compact sidebar", "entry": "mods/tweaks.js" }
+  ]
+}</code></pre>
+                <div class="table-scroll">
+                <table>
+                    <tr><th>Field</th><th>Type</th><th>Required</th><th>Meaning</th></tr>
+                    <tr><td><code>name</code></td><td>string</td><td>yes</td><td>Display name in the panel and the marketplace.</td></tr>
+                    <tr><td><code>version</code></td><td>string</td><td>no</td><td>Your version, e.g. <code>"1.2.0"</code>. Shown, not compared.</td></tr>
+                    <tr><td><code>author</code></td><td>string</td><td>no</td><td>Shown in the marketplace.</td></tr>
+                    <tr><td><code>mods</code></td><td>array</td><td>no</td><td>JavaScript parts. See <a href="#mods">Mods</a>.</td></tr>
+                    <tr><td><code>backgrounds</code></td><td>array</td><td>no</td><td>Background parts. See <a href="#backgrounds">Backgrounds</a>.</td></tr>
+                    <tr><td><code>chats</code></td><td>array</td><td>no</td><td>Chat-area CSS parts. See <a href="#chats">Chat styles</a>.</td></tr>
+                    <tr><td><code>icon</code></td><td>string</td><td>no</td><td>Path to an icon image. See <a href="#icon">Icon</a>.</td></tr>
+                    <tr><td><code>variables</code></td><td>array</td><td>no</td><td>User settings. See <a href="#variables">Variables</a>.</td></tr>
+                </table>
+                </div>
+                <p>A theme can include any subset of these. Part names are how Theames refers to a part, so keep them unique within
+                each list and don't rename them between versions. Theames ignores fields it doesn't know.</p>
+
+                <h2 id="mods">Mods</h2>
+<pre><code>"mods": [ { "name": "Compact sidebar", "entry": "mods/tweaks.js" } ]</code></pre>
+                <p>A mod is a JavaScript file that runs inside Teams. Users can turn on any number of mods at once, from any themes.
+                Theames runs the file in the global scope of every Teams page. It runs when the mod is switched on, and again each
+                time a Teams page loads.</p>
+                <p>Mods can be switched off without restarting Teams. To make that possible, Theames records what a mod creates
+                <strong>while its file is running</strong>, and removes exactly those things when the mod is switched off:</p>
+                <ul>
+                    <li>elements added to the page during that first run,</li>
+                    <li><code>MutationObserver</code>s created during it (they are disconnected),</li>
+                    <li><code>setInterval</code> and <code>setTimeout</code> timers started during it (they are cleared).</li>
+                </ul>
+                <p>Event listeners, and elements or timers created later from inside a callback, are <strong>not</strong> tracked.
+                Write mods so they still undo cleanly:</p>
+                <ul>
+                    <li><strong>Wrap the file in an IIFE.</strong> Top-level <code>const</code>/<code>let</code> would clash when the mod is switched off and on again.</li>
+                    <li><strong>Add your <code>&lt;style&gt;</code> element right away</strong>, in the first run, so it gets removed with the mod.</li>
+                    <li><strong>Make later changes inert without that style.</strong> For example, mark Teams elements with a <code>data-</code>
+                    attribute and target the attribute from your CSS. Once the style is gone, the attribute does nothing.</li>
+                    <li><strong>Create observers and timers at the top level</strong> of the file, not lazily, so they are tracked.</li>
+                </ul>
+<pre><code>(function () {
+  var ID = 'my-compact-sidebar';
+  if (document.getElementById(ID)) return;          // already applied on this page
+
+  var style = document.createElement('style');
+  style.id = ID;
+  style.textContent = '[data-my-compact] { padding: 2px !important; }';
+  document.head.appendChild(style);                 // tracked: removed on switch-off
+
+  function tag() {
+    document.querySelectorAll('[data-tid="chat-pane-message"]').forEach(function (n) {
+      n.setAttribute('data-my-compact', '');         // inert once the style is gone
+    });
+  }
+  tag();
+  new MutationObserver(tag).observe(document.body, { childList: true, subtree: true }); // tracked
+})();</code></pre>
+                <p>Teams' class names are generated and change between updates. Target the <code>data-tid</code> attributes
+                instead, which are much more stable. If a mod has variables and the user changes one, Theames switches the mod off
+                and on again with the new values. For older mods, the selected background image is also available as
+                <code>window.imageBase64Background</code> (a data URI, or an empty string).</p>
+
+                <h2 id="backgrounds">Backgrounds</h2>
+<pre><code>"backgrounds": [
+  { "name": "Night city", "file": "bg/night.png" },
+  { "name": "Solid",      "color": "{{background}}", "transparent": true },
+  { "name": "Keep Teams", "file": "bg/soft.jpg", "transparent": false }
+]</code></pre>
+                <div class="table-scroll">
+                <table>
+                    <tr><th>Field</th><th>Meaning</th></tr>
+                    <tr><td><code>name</code></td><td>Required. Shown in the panel.</td></tr>
+                    <tr><td><code>file</code></td><td>An image in the archive: <code>.png</code>, <code>.jpg</code>/<code>.jpeg</code>, <code>.gif</code>, <code>.webp</code> or <code>.svg</code>.</td></tr>
+                    <tr><td><code>color</code></td><td>Instead of <code>file</code>: any CSS <code>background</code> value, such as a colour or a gradient. Variables work here.</td></tr>
+                    <tr><td><code>transparent</code></td><td>Default <code>true</code>. Clears Teams' own opaque panels so the background shows through the whole window. Set <code>false</code> to keep them.</td></tr>
+                </table>
+                </div>
+                <p>One background is active at a time. The image is embedded into each Teams page, so keep files reasonably small:
+                a compressed JPEG or WebP at screen size is plenty.</p>
+
+                <h2 id="chats">Chat styles</h2>
+<pre><code>"chats": [ { "name": "Neon bubbles", "file": "chats/bubbles.css" } ]</code></pre>
+                <p>A chat style is a CSS file for the chat and message area. One is active at a time, separate from the background.
+                Variables are filled in before it is applied. Teams sets many styles inline, so you will usually need <code>!important</code>:</p>
+<pre><code>[data-tid="chat-pane-message"] {
+  background: {{accent}} !important;
+  border-radius: 14px !important;
+}</code></pre>
+
+                <h2 id="icon">Icon</h2>
+<pre><code>"icon": "icon.png"</code></pre>
+                <p>An image the user can pick as their app icon. A square PNG works best (512 × 512 or larger).</p>
+                <ul>
+                    <li><strong>macOS</strong>: it becomes the Microsoft Teams app icon in the Dock and Finder. This needs the App Management
+                    permission, and Theames applies it again after a Teams update replaces the app.</li>
+                    <li><strong>Windows</strong>: Teams' own icon can't be changed, so it becomes the icon of the Theames shortcut
+                    (Start menu, desktop and the pinned taskbar shortcut).</li>
+                </ul>
+
+                <h2 id="variables">Variables</h2>
+                <p>Variables let users adjust a theme without editing it. Theames shows a control for each one in the panel and saves
+                the user's values in its own settings. The <code>.theame</code> file itself is never changed.</p>
+<pre><code>"variables": [
+  { "name": "accent", "label": "Accent",        "type": "color",  "default": "#33ff88" },
+  { "name": "size",   "label": "Text size (px)", "type": "range",  "min": 10, "max": 15, "step": 1, "default": "12" },
+  { "name": "tint",   "label": "Tint emojis",   "type": "toggle", "default": "0" }
+]</code></pre>
+                <div class="table-scroll">
+                <table>
+                    <tr><th>Field</th><th>Meaning</th></tr>
+                    <tr><td><code>name</code></td><td>Required. The name used in placeholders.</td></tr>
+                    <tr><td><code>label</code></td><td>Text shown next to the control. Defaults to the name.</td></tr>
+                    <tr><td><code>type</code></td><td><code>color</code> (colour picker, the default), <code>range</code> (slider) or <code>toggle</code> (checkbox, value <code>1</code> or <code>0</code>).</td></tr>
+                    <tr><td><code>default</code></td><td>Required, and always a <strong>string</strong>, even for numbers: <code>"12"</code>, not <code>12</code>.</td></tr>
+                    <tr><td><code>min</code>, <code>max</code>, <code>step</code></td><td>Numbers for a <code>range</code> slider.</td></tr>
+                </table>
+                </div>
+                <p>Placeholders are replaced in mod JavaScript, chat CSS and background <code>color</code> values. They are not replaced inside image files.</p>
+                <div class="table-scroll">
+                <table>
+                    <tr><th>Write</th><th>Becomes</th></tr>
+                    <tr><td><code>{{accent}}</code></td><td>The value, e.g. <code>#33ff88</code>.</td></tr>
+                    <tr><td><code>{{accent|rgb}}</code></td><td>A hex colour as <code>r, g, b</code>, e.g. <code>51, 255, 136</code>. Useful in <code>rgba({{accent|rgb}}, 0.5)</code>.</td></tr>
+                    <tr><td><code>{{#tint}}…{{/tint}}</code></td><td>Kept only when the variable is on.</td></tr>
+                    <tr><td><code>{{^tint}}…{{/tint}}</code></td><td>Kept only when the variable is off.</td></tr>
+                </table>
+                </div>
+                <p>A value counts as <em>off</em> when it is empty, <code>0</code>, <code>false</code>, <code>off</code> or <code>no</code>.
+                Blocks for different variables can be nested. An unknown name in a block counts as off. An unknown plain placeholder is
+                left as written. Variables belong to their own theme, so two themes can both have an <code>accent</code> without clashing.</p>
+
+                <h2 id="packing">Packing &amp; testing</h2>
+                <p>Zip the <strong>contents</strong> of your theme folder, not the folder itself, then give it a <code>.theame</code> name.</p>
+                <h3>macOS / Linux</h3>
+<pre><code>cd my-theme
+zip -r -X ../MyTheme.theame . -x '.DS_Store'</code></pre>
+                <h3>Windows (PowerShell)</h3>
+<pre><code>Compress-Archive -Path .\my-theme\* -DestinationPath .\MyTheme.zip
+Rename-Item .\MyTheme.zip MyTheme.theame</code></pre>
+                <h3>Python (any system)</h3>
+<pre><code>import os, zipfile
+src = "my-theme"
+with zipfile.ZipFile("MyTheme.theame", "w", zipfile.ZIP_DEFLATED) as z:
+    for base, _, files in os.walk(src):
+        for f in files:
+            if f != ".DS_Store":
+                full = os.path.join(base, f)
+                z.write(full, os.path.relpath(full, src))</code></pre>
+                <p>Check the result with <code>unzip -l MyTheme.theame</code>: <code>manifest.json</code> should be listed with no folder in front of it.</p>
+                <h3>Testing</h3>
+                <ol class="steps">
+                    <li>Copy the file into your themes folder and open the Theames panel in Teams. A theme with a broken archive or invalid
+                    <code>manifest.json</code> won't show up. Check the JSON for trailing commas and numbers written without quotes in <code>default</code>.</li>
+                    <li>Switch each part on and <strong>off</strong>. After switching off, Teams should look exactly as it did before.</li>
+                    <li>To see errors, open <code>chrome://inspect</code> in Chrome or Edge while Theames is running, add
+                    <code>localhost:9222</code> under <em>Configure…</em>, and inspect the Teams page. Mod errors appear in the console
+                    as <code>[theames] mod … failed</code>.</li>
+                </ol>
+
+                <h2>Submitting</h2>
+                <p>Email your <code>.theame</code> to <a href="mailto:me@poplel.xyz?subject=Theame%20for%20the%20marketplace">me@poplel.xyz</a>
+                to have it added to the <a href="/marketplace">marketplace</a>. Include a sentence about what it does and, if you like,
+                a screenshot. Please keep mod JavaScript readable rather than minified, so people can check what it does.</p>
+            </main>
+        </div>
+
+        <div class="status-bar">
+            <p class="status-bar-field">theames.poplel.xyz/docs</p>
+            <p class="status-bar-field">.theame format</p>
+            <p class="status-bar-field">Theames 1.0.0</p>
+        </div>
+    </div>
+</body>
+</html>

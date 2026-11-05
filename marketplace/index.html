@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace — Theames</title>
+    <meta name="description" content="Download .theame files for Theames: backgrounds, chat styles, icons and mods for Microsoft Teams">
+    <link rel="icon" href="/logo.png">
+    <link rel="stylesheet" href="https://unpkg.com/98.css@0.1.21/dist/98.css">
+    <link rel="stylesheet" href="/style.css">
+    <script src="/sidebar.js" defer></script>
+    <script src="/marketplace.js" defer></script>
+</head>
+<body>
+    <div class="window app-window">
+        <div class="title-bar">
+            <div class="title-bar-text">Theames — Marketplace</div>
+            <div class="title-bar-controls">
+                <button aria-label="Minimize" onclick="document.exitFullscreen()"></button>
+                <button aria-label="Maximize" onclick="document.documentElement.requestFullscreen()"></button>
+                <a href="/"><button aria-label="Close"></button></a>
+            </div>
+        </div>
+
+        <div class="app-body">
+            <nav class="sidebar">
+                <noscript>
+                    <div class="window nav">
+                        <div class="window-body">
+                            <p class="nav-heading">Theames</p>
+                            <ul>
+                                <li><a href="/">Home &amp; Download</a></li>
+                                <li><a href="/marketplace">Marketplace</a></li>
+                                <li><a href="/docs">.theame format</a></li>
+                                <li><a href="mailto:me@poplel.xyz">Submit a theame: me@poplel.xyz</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </noscript>
+            </nav>
+            <main class="content sunken-panel">
+                <h1>Marketplace</h1>
+                <p class="meta">Free <code>.theame</code> files for <a href="/">Theames</a>. Download one, then drop it into your themes folder
+                (Teams → <strong>...</strong> → <strong>🎨 Theames</strong> → <strong>Open themes folder</strong>).</p>
+
+                <div class="callout">
+                    <p><strong>Made a theame?</strong> Email the <code>.theame</code> file to
+                    <a href="mailto:me@poplel.xyz?subject=Theame%20for%20the%20marketplace">me@poplel.xyz</a> to have it added here.
+                    The <a href="/docs">format docs</a> explain how to build one.</p>
+                </div>
+
+                <div class="toolbar">
+                    <label for="filter">Search:</label>
+                    <input id="filter" type="search" placeholder="Name, author or part" autocomplete="off">
+                    <span class="count" id="count"></span>
+                </div>
+
+                <p class="status-line" id="status">Loading themes…</p>
+                <ul class="themes" id="themes"></ul>
+
+                <noscript>
+                    <p>The marketplace needs JavaScript to list themes. You can also browse the files directly:
+                    <a href="https://media.pophosting.xyz/assets/Theames/Themes/">media.pophosting.xyz/assets/Theames/Themes</a>.</p>
+                </noscript>
+
+                <h2>Before you install</h2>
+                <p>Mods are JavaScript that runs inside Teams with the same access as Teams itself. Only install themes from people you trust,
+                and if you are unsure, open the <code>.theame</code> (it's a zip) and read the <code>.js</code> files first.</p>
+            </main>
+        </div>
+
+        <div class="status-bar">
+            <p class="status-bar-field">theames.poplel.xyz/marketplace</p>
+            <p class="status-bar-field" id="status-count">…</p>
+            <p class="status-bar-field">Submit: me@poplel.xyz</p>
+        </div>
+    </div>
+</body>
+</html>

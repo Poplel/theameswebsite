@@ -1,0 +1,36 @@
+# Deployed copy: raspberry2.lan:/home/pi/Dockers/Active/theames/
+# (this file and default.conf sit next to each other there; same pattern as nudibranchxyz)
+services:
+  web:
+    image: nginx:alpine
+    container_name: theames-web
+    restart: unless-stopped
+    ports:
+      - "8859:80"
+    volumes:
+      - site-data:/usr/share/nginx/html:ro
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - git-sync
+
+  git-sync:
+    image: alpine/git
+    container_name: theames-sync
+    restart: unless-stopped
+    volumes:
+      - site-data:/git
+    working_dir: /git
+    entrypoint: /bin/sh
+    command: -c "
+      while true; do
+        if [ -d .git ]; then
+          echo 'Updating from GitHub...' && git pull --ff-only;
+        else
+          echo 'Removing default Nginx files...' && rm -rf ./* ./.[!.]*;
+          echo 'Initial clone from GitHub...' && git clone https://github.com/Poplel/theameswebsite .;
+        fi;
+        echo 'Sleeping for 10 minutes...' && sleep 600;
+      done"
+
+volumes:
+  site-data:
