@@ -367,6 +367,53 @@ pre code { color: inherit; }
 
 .theme-desc { margin: 0; font-size: 11px; line-height: 1.45; }
 
+/* on a card the description is a teaser; the details window shows all of it */
+.theme-card .theme-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.theme-buttons { display: flex; gap: 6px; align-items: center; }
+
+.theme-buttons button { min-width: 64px; }
+
+.theme-card .theme-preview a { cursor: zoom-in; }
+
+/* ---- Details window ---- */
+
+.theme-dialog {
+    width: min(960px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    padding: 3px;
+    border: none;
+    color: #222;
+}
+
+.theme-dialog[open] { display: flex; flex-direction: column; }
+
+.theme-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+
+.theme-dialog .window-body {
+    margin: 8px;
+    overflow-y: auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.theme-dialog .theme-preview img { object-fit: contain; object-position: center; }
+
+.theme-dialog .theme-preview a { cursor: zoom-in; }
+
+.theme-dialog .theme-title { font-size: 15px; }
+
+.theme-dialog .theme-desc { font-size: 12px; line-height: 1.55; }
+
+.theme-dialog .theme-parts { font-size: 12px; }
+
 .theme-preview { display: flex; flex-direction: column; gap: 4px; }
 
 .theme-preview a {

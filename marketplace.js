@@ -98,7 +98,9 @@
     }
 
     function loadTheme(item) {
-        return fetch(item.url).then(function (res) {
+        // no-cache: revalidate every time (a cheap 304 when unchanged), so a re-uploaded theme
+        // is never shown from an old copy the browser kept.
+        return fetch(item.url, { cache: "no-cache" }).then(function (res) {
             if (!res.ok) throw new Error("HTTP " + res.status);
             return res.arrayBuffer();
         }).then(function (buf) {
@@ -140,19 +142,42 @@
         ul.appendChild(li);
     }
 
-    // Preview: the first image large; with several, numbered buttons switch between them.
-    // Clicking the image opens it full size.
-    function previewBox(urls, title) {
+    // Everything shown about a theme, worked out once from its manifest.
+    function describe(item) {
+        var mf = item.manifest || {};
+        return {
+            title: mf.name || item.file.replace(/\.theame$/i, ""),
+            by: [mf.version ? "v" + mf.version : "", mf.author ? "by " + mf.author : ""].filter(Boolean).join(" · "),
+            desc: typeof mf.description === "string" ? mf.description.trim() : "",
+            mods: names(mf.mods),
+            bgs: names(mf.backgrounds),
+            chats: names(mf.chats),
+            icon: !!mf.icon,
+            vars: (Array.isArray(mf.variables) ? mf.variables : []).map(function (v) {
+                return v && (v.label || v.name);
+            }).filter(Boolean)
+        };
+    }
+
+    // Preview image; with several, numbered buttons switch between them. On a card, clicking
+    // the image opens the details window (onOpen); in the details window it opens full size.
+    function previewBox(urls, title, onOpen) {
         var box = el("div", "theme-preview");
         var link = el("a");
-        link.href = urls[0];
-        link.target = "_blank";
-        link.rel = "noopener";
-        link.title = "Open full size";
         var img = el("img");
         img.src = urls[0];
         img.alt = "Preview of " + title;
-        img.loading = "lazy";
+        if (onOpen) {
+            img.loading = "lazy";
+            link.href = "#";
+            link.title = "Show details";
+            link.addEventListener("click", function (e) { e.preventDefault(); onOpen(); });
+        } else {
+            link.href = urls[0];
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.title = "Open full size";
+        }
         link.appendChild(img);
         box.appendChild(link);
         if (urls.length > 1) {
@@ -164,7 +189,7 @@
                 if (i === 0) b.className = "on";
                 b.addEventListener("click", function () {
                     img.src = u;
-                    link.href = u;
+                    if (!onOpen) link.href = u;
                     var all = pick.querySelectorAll("button");
                     for (var j = 0; j < all.length; j++) all[j].className = all[j] === b ? "on" : "";
                 });
@@ -175,9 +200,44 @@
         return box;
     }
 
+    function headBlock(item, d) {
+        var head = el("div", "theme-head");
+        if (item.iconUrl) {
+            var img = el("img", "theme-icon");
+            img.src = item.iconUrl;
+            img.alt = "";
+            head.appendChild(img);
+        } else {
+            head.appendChild(el("div", "theme-icon placeholder", d.title.charAt(0).toUpperCase()));
+        }
+        var info = el("div");
+        info.appendChild(el("p", "theme-title", d.title));
+        if (d.by) info.appendChild(el("p", "theme-by", d.by));
+        head.appendChild(info);
+        return head;
+    }
+
+    function partsBlock(item, d) {
+        var parts = el("ul", "theme-parts");
+        partRow(parts, "Mods", d.mods);
+        partRow(parts, "Backgrounds", d.bgs);
+        partRow(parts, "Chat styles", d.chats);
+        if (d.icon) partRow(parts, "Icon", ["included"]);
+        partRow(parts, "Settings", d.vars);
+        if (item.error) partRow(parts, "Note", ["couldn't read this file's contents (" + item.error + ")"]);
+        return parts.childNodes.length ? parts : null;
+    }
+
+    function downloadLink(item) {
+        var a = el("a", "button-link", "Download");
+        a.href = item.url;
+        a.setAttribute("download", item.file);
+        return a;
+    }
+
     function render(item) {
-        var mf = item.manifest || {};
-        var title = mf.name || item.file.replace(/\.theame$/i, "");
+        var d = describe(item);
+        var open = function () { openDetails(item); };
 
         var li = el("li");
         var win = el("div", "window theme-card");
@@ -186,56 +246,82 @@
         win.appendChild(bar);
         var body = el("div", "window-body");
 
-        if (item.previews && item.previews.length) body.appendChild(previewBox(item.previews, title));
-
-        var head = el("div", "theme-head");
-        if (item.iconUrl) {
-            var img = el("img", "theme-icon");
-            img.src = item.iconUrl;
-            img.alt = "";
-            head.appendChild(img);
-        } else {
-            head.appendChild(el("div", "theme-icon placeholder", title.charAt(0).toUpperCase()));
-        }
-        var info = el("div");
-        info.appendChild(el("p", "theme-title", title));
-        var by = [];
-        if (mf.version) by.push("v" + mf.version);
-        if (mf.author) by.push("by " + mf.author);
-        if (by.length) info.appendChild(el("p", "theme-by", by.join(" · ")));
-        head.appendChild(info);
-        body.appendChild(head);
-
-        var desc = typeof mf.description === "string" ? mf.description.trim() : "";
-        if (desc) body.appendChild(el("p", "theme-desc", desc));
-
-        var parts = el("ul", "theme-parts");
-        var mods = names(mf.mods), bgs = names(mf.backgrounds), chats = names(mf.chats);
-        var vars = (Array.isArray(mf.variables) ? mf.variables : []).map(function (v) {
-            return v && (v.label || v.name);
-        }).filter(Boolean);
-        partRow(parts, "Mods", mods);
-        partRow(parts, "Backgrounds", bgs);
-        partRow(parts, "Chat styles", chats);
-        if (mf.icon) partRow(parts, "Icon", ["included"]);
-        partRow(parts, "Settings", vars);
-        if (item.error) partRow(parts, "Note", ["couldn't read this file's contents (" + item.error + ")"]);
-        if (parts.childNodes.length) body.appendChild(parts);
+        if (item.previews && item.previews.length) body.appendChild(previewBox(item.previews, d.title, open));
+        body.appendChild(headBlock(item, d));
+        if (d.desc) body.appendChild(el("p", "theme-desc", d.desc));
+        var parts = partsBlock(item, d);
+        if (parts) body.appendChild(parts);
 
         var foot = el("div", "theme-foot");
         foot.appendChild(el("span", "size", fmtSize(item.size)));
-        var a = el("a", "button-link", "Download");
-        a.href = item.url;
-        a.setAttribute("download", item.file);
-        foot.appendChild(a);
+        var btns = el("span", "theme-buttons");
+        var more = el("button", null, "Details");
+        more.type = "button";
+        more.addEventListener("click", open);
+        btns.appendChild(more);
+        btns.appendChild(downloadLink(item));
+        foot.appendChild(btns);
         body.appendChild(foot);
 
         win.appendChild(body);
         li.appendChild(win);
 
-        item.search = [title, item.file, mf.author || "", desc].concat(mods, bgs, chats, vars).join(" ").toLowerCase();
+        item.search = [d.title, item.file, (item.manifest && item.manifest.author) || "", d.desc]
+            .concat(d.mods, d.bgs, d.chats, d.vars).join(" ").toLowerCase();
         item.li = li;
         return li;
+    }
+
+    // ---- Details window ---------------------------------------------------
+    // One <dialog>, refilled per theme. The address bar gets #File.theame, so a details
+    // window can be linked to directly.
+    var dialog = el("dialog", "window theme-dialog");
+    dialog.setAttribute("aria-labelledby", "theme-dialog-title");
+    var dBar = el("div", "title-bar");
+    var dTitle = el("div", "title-bar-text");
+    dTitle.id = "theme-dialog-title";
+    var dCtl = el("div", "title-bar-controls");
+    var dClose = el("button");
+    dClose.setAttribute("aria-label", "Close");
+    dClose.addEventListener("click", function () { dialog.close(); });
+    dCtl.appendChild(dClose);
+    dBar.appendChild(dTitle);
+    dBar.appendChild(dCtl);
+    var dBody = el("div", "window-body");
+    dialog.appendChild(dBar);
+    dialog.appendChild(dBody);
+    document.body.appendChild(dialog);
+    // a click on the dimmed backdrop lands on the dialog element itself
+    dialog.addEventListener("click", function (e) { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener("close", function () {
+        if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+    });
+
+    function openDetails(item) {
+        var d = describe(item);
+        dTitle.textContent = d.title + " — " + item.file;
+        dBody.textContent = "";
+        if (item.previews && item.previews.length) dBody.appendChild(previewBox(item.previews, d.title, null));
+        dBody.appendChild(headBlock(item, d));
+        if (d.desc) dBody.appendChild(el("p", "theme-desc", d.desc));
+        var parts = partsBlock(item, d);
+        if (parts) dBody.appendChild(parts);
+        var foot = el("div", "theme-foot");
+        foot.appendChild(el("span", "size", fmtSize(item.size)));
+        foot.appendChild(downloadLink(item));
+        dBody.appendChild(foot);
+        history.replaceState(null, "", "#" + encodeURIComponent(item.file));
+        if (!dialog.open) dialog.showModal();
+        dBody.scrollTop = 0;
+        dClose.focus();
+    }
+
+    function openFromHash() {
+        var want = decodeURIComponent(location.hash.slice(1));
+        if (!want) return;
+        for (var i = 0; i < cards.length; i++) {
+            if (cards[i].file === want) { openDetails(cards[i]); return; }
+        }
     }
 
     function applyFilter() {
@@ -283,6 +369,7 @@
             loaded.forEach(function (it) { listEl.appendChild(render(it)); });
             statusEl.hidden = true;
             applyFilter();
+            openFromHash();
         });
     }).catch(fail);
 })();

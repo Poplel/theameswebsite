@@ -13,6 +13,15 @@ Styled with [98.css](https://jdan.github.io/98.css/), same as the Nudibranch sit
 
 Push to `main`. The server pulls this repo every 10 minutes.
 
+## Caching
+
+Cloudflare tells browsers to keep `.js`, `.css` and image files for 4 hours, whatever nginx says. Pages
+(HTML) aren't cached. So the pages load the CSS and scripts with a version number (`/style.css?v=...`).
+**When you change `style.css`, `sidebar.js` or `marketplace.js`, bump the version** in every page, or
+visitors keep the old file for up to 4 hours:
+
+    V=$(date +%Y%m%d%H%M); sed -i '' -E "s#\?v=[0-9a-z]+\"#?v=$V\"#g" index.html marketplace/index.html docs/index.html 404.html
+
 ## Marketplace
 
 `marketplace.js` lists the `.theame` files in
