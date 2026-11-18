@@ -1,2 +1,2 @@
-176258a130e6f4c5371195583a9091e22db0df3c86829fba2ca505ecfc4ae4a1  Theames-1.0.0-macOS.dmg
-d7bfbffec89f3a9bf8a56df4988edbbdd4f6c76dcb44287c1c28b7dc16411f2a  Theames-1.0.0-Windows-x64.zip
+91db21f2ff36cd0af95de81405a02e3a18d8474702dfdfc8797df72d7a141553  Theames-1.1.0-macOS.dmg
+566a360b69f94dfbdcbe81c278c855b232c08c219b72156b0ccd7ba1bd340b9b  Theames-1.1.0-Windows-x64.zip
